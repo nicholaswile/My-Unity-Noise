@@ -30,6 +30,9 @@ public class HashViz : MonoBehaviour
     _configID    = Shader.PropertyToID("_Config");
 
     private Bounds _origin;
+    private const float MAX_HEIGHT = 2.0f, MIN_HEIGHT = -2.0f;
+    private float _factor = 1;
+    private float _t = 0.5f;
 
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
     struct HashJob : IJobFor
@@ -94,21 +97,14 @@ public class HashViz : MonoBehaviour
         _origin = new Bounds(Vector3.zero, Vector3.zero);
     }
 
-    float factor = 1;
-    float t = 0.5f;
+
     private void Update()
     {
-        if (_height >= 2f)
-        {
-            factor = -1f;
-        }
-        if (_height <= -2f)
-        {
-            factor = 1f;
-        }
-        t += factor * (Time.deltaTime) * _animationSpeed;
-        _height = Mathf.SmoothStep(-2f, 2f, t);
-        OnValidate();
+        if (_height >= MAX_HEIGHT) _factor = -1f;
+        else if (_height <= MIN_HEIGHT) _factor = 1f;
+        _t += _factor * (Time.deltaTime) * _animationSpeed;
+        _height = Mathf.SmoothStep(MIN_HEIGHT, MAX_HEIGHT, _t);
+        OnValidate();   
 
         Graphics.DrawMeshInstancedProcedural(_mesh, 0, _material, _origin, _hashes.Length, _matPropertyBlock);   
     }
